@@ -45,7 +45,13 @@ const routes = [
             name: 'MyPage',
             component: () => import('@/views/MyPage.vue'),
             meta: { requiresAuth: true },
+          },      {
+            path: 'userPage/:id',
+            name: 'userPage',
+            component: () => import('@/views/UserPage.vue'),
+            meta: { requiresAuth: true },
           },
+
 
           // 추가적인 자식 라우트를 여기에 계속 추가할 수 있습니다.
         ],
@@ -64,12 +70,14 @@ router.beforeEach(async (to, from, next) => {
     // 인증이 필요한 페이지인 경우
     try {
       const response = await axios.get("/users");
-      console.log(response);
+      console.log("유저정보",response);
       window.localStorage.setItem('username', response.data.username);
       window.localStorage.setItem('userNickname', response.data.nickname);
       window.localStorage.setItem('userImage', response.data.image);
       window.localStorage.setItem('userAddress', response.data.address);
       window.localStorage.setItem('userInterests', response.data.interests);
+      window.localStorage.setItem('email', response.data.email);
+      window.localStorage.setItem('id', response.data.id);
       next();
     } catch (error) {
       console.error(error);

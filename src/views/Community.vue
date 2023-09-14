@@ -202,7 +202,7 @@ export default {
           item-value="id"
           :search="search"
           class="elevation-1"
-          @click:row="handleRowClick"
+
         >
           <template v-slot:item="{ item }">
             <tr @click="openModal(item)" style="text-align: center;">

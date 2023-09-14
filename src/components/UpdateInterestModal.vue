@@ -2,8 +2,10 @@
   <v-dialog v-model="dialog" max-width="1000">
     <v-card align="center">
 
-      <v-card-title style="margin-top: 50px">관심사를 등록 해주세요</v-card-title>
-      <v-card-subtitle style="margin-bottom: 50px">{{nickname}}님의 관심사에 따라 추천 서비스를 제공해드립니다. (3개 이상을 추천)</v-card-subtitle>
+      <v-card-title style="margin-top: 50px">관심사 수정</v-card-title>
+      <v-card-subtitle style="margin-bottom: 50px">{{ nickname }}님의 관심사에 따라 추천 서비스를 제공해드립니다. (3개 이상을 추천)
+      </v-card-subtitle>
+
       <v-row style="margin-left: 90px;margin-right: 90px">
         <v-col>
           <v-card-title>체육시설</v-card-title>
@@ -13,7 +15,9 @@
             v-for="(subInterest, index) in sportSub"
             :key="index"
             :label="subInterest"
+            :model-value="initiallyChecked(subInterest)"
             @change="updateSelectedInterest(subInterest)"
+
           ></v-checkbox>
         </v-col>
 
@@ -25,6 +29,8 @@
             v-for="(subInterest, index) in spaceSub"
             :key="index"
             :label="subInterest"
+            :model-value="initiallyChecked(subInterest)"
+
             @change="updateSelectedInterest(subInterest)"
           ></v-checkbox>
         </v-col>
@@ -37,6 +43,8 @@
             v-for="(subInterest, index) in cultureSub"
             :key="index"
             :label="subInterest"
+            :model-value="initiallyChecked(subInterest)"
+
             @change="updateSelectedInterest(subInterest)"
           ></v-checkbox>
         </v-col>
@@ -49,6 +57,8 @@
             v-for="(subInterest, index) in eduSub"
             :key="index"
             :label="subInterest"
+            :model-value="initiallyChecked(subInterest)"
+
             @change="updateSelectedInterest(subInterest)"
           ></v-checkbox>
         </v-col>
@@ -61,6 +71,7 @@
             v-for="(subInterest, index) in medicalSub"
             :key="index"
             :label="subInterest"
+            :model-value="initiallyChecked(subInterest)"
             @change="updateSelectedInterest(subInterest)"
           ></v-checkbox>
         </v-col>
@@ -76,14 +87,17 @@
 import axios from "@/axios/axios-instance";
 
 export default {
-  mounted() {
-
-    this.nickname = localStorage.getItem('userNickname');
-
+  props: {
+    list: Array, // 클릭한 항목의 정보를 받아올 prop입니다.
   },
+  created() {
+    this.nickname = localStorage.getItem('userNickname');
+  },
+
+
   data() {
     return {
-      nickname:'',
+      nickname: '',
       dialog: false,
       interestList: [],
       sportSub: ["축구장", "풋살장", "족구장", "야구장", "테니스장", "농구장", "배구장", "다목적경기장", "운동장", "체육관", "배드민턴장", "탁구장", "수영장", "교육시설", "골프장"],
@@ -95,22 +109,56 @@ export default {
     };
   },
   methods: {
+
+
+    initiallyChecked(subInterest) {
+      if (subInterest=='서북병원'){
+        this.list.forEach(item => {
+          console.log(item)
+          this.interestList.push(item);
+        });
+      }
+      const foundInterest = this.list.find(interest => interest == subInterest);
+      if (foundInterest) {
+        console.log('Found interest:', foundInterest);
+        return true;
+      } else {
+        return false;
+      }
+    },
     updateSelectedInterest(item) {
-      if (this.interestList.includes(item)){
+      if (this.interestList.includes(item)) {
         const findIndex = this.interestList.indexOf(item);
-        if(findIndex > -1) {
+        if (findIndex > -1) {
           this.interestList.splice(findIndex, 1);
         }
-      }else{
+      } else {
         this.interestList.push(item)
       }
-      console.log( this.interestList)
+      console.log(this.interestList)
     },
     async submitInterests() {
 
-      if(this.interestList.length>0){
-        await axios
-          .post("/users/interest", this.interestList)
+      if(this.list){
+
+        if (this.interestList.length > 0) {
+          await axios
+            .put("/users/interest", this.interestList)
+            .then((response) => {
+              // 서버에서 응답을 처리합니다.
+              console.log("관심사 수정 성공");
+              window.location.reload(); // 창 새로고침
+            })
+            .catch((error) => {
+              console.error("관심사 수정 실패", error);
+            });
+        } else {
+          alert("최소 한개 이상 선택해주세요")
+        }
+      }else{
+        if (this.interestList.length > 0) {
+          await axios
+            .post("/users/interest", this.interestList)
             .then((response) => {
               // 서버에서 응답을 처리합니다.
               console.log("관심사 저장 성공");
@@ -120,9 +168,12 @@ export default {
             .catch((error) => {
               console.error("관심사 저장 실패", error);
             });
-      }else{
-        alert("최소 한개 이상 선택해주세요")
+        } else {
+          alert("최소 한개 이상 선택해주세요")
+        }
       }
+
+
 
     }
     ,

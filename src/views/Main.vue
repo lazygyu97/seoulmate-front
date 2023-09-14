@@ -18,6 +18,7 @@ export default {
       serviceList: [], // itemList 초기화
       allPostList: [], // itemList 초기화
       addressPostList: [], // itemList 초기화
+
     };
   },
   mounted() {
@@ -26,7 +27,7 @@ export default {
     this.address = localStorage.getItem('userAddress');
     this.interest= localStorage.getItem('userInterests')
     console.log("확인 : ",this.interest)
-    if (this.interest.length==0){
+    if (this.interest.length===0){
       this.interestModal();
     }
 
