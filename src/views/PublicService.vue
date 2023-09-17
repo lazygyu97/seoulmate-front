@@ -3,6 +3,8 @@
     <v-col align="center">
       <v-card class="background-card" style="max-width:100%">
 
+
+
         <v-row style="margin-left:15%;margin-top: 200px;margin-bottom: 10px">
           <v-btn
             v-for="(category, index) in categories"
@@ -45,7 +47,13 @@
         </v-btn>
 
       </v-row>
-
+      <v-row v-if="isLoading" justify="center">
+        <v-progress-circular
+          indeterminate
+          size="64"
+          color="primary"
+        ></v-progress-circular>
+      </v-row>
       <v-row style="max-width: 70%">
         <v-col v-for="(item, index) in pagedItems" :key="index" cols="4" style="min-width: 100px">
           <v-card @click="openModal(item)">
@@ -86,6 +94,7 @@ export default {
   },
   data() {
     return {
+      isLoading: true,
       dialog :false,
       selectedService: null,
       nickname: '',
@@ -196,6 +205,7 @@ export default {
       .get("/seoul/services")
       .then((response) => {
         this.items = response.data.itemList; // itemList 업데이트
+        this.isLoading= false;
       })
       .catch((error) => {
         console.error(error);

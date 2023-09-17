@@ -4,6 +4,7 @@ import Cookies from 'js-cookie';
 
 const instance = axios.create({
     baseURL: "http://localhost:8080/api", // baseURL 설정
+    // baseURL: "http://54.180.181.32:8080/api", // baseURL 설정
     // 기타 필요한 설정 추가
 });
 
@@ -24,7 +25,7 @@ instance.interceptors.request.use(
         return config;
     },
     (error) => {
-        return Promise.reject(error);
+        return Promise.reject("2123123123",error);
     }
 );
 

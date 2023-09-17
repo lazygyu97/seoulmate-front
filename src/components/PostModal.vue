@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="dialog" max-width="900" max-height="1100">
+  <v-dialog v-model="dialog" max-width="900" max-height="1100" @click:outside="closeModal">
     <v-card align="center">
       <v-img style="margin-top: 30px; margin-bottom: 30px" cover>
         <template v-if="post.images && post.images.length > 0">
@@ -24,8 +24,17 @@
             <v-card-title v-if="!isEditPost">{{ post.title }}</v-card-title>
             <v-text-field v-else v-model="editedTitle"></v-text-field>
 
+            <v-row>
+              <v-col align="end">
+                <v-card-text>작성자 :</v-card-text>
 
-            <v-card-text>작성자 : {{ post.author }}</v-card-text>
+              </v-col>
+              <v-col align="start">
+                <v-card-text @click="goUserPage">{{ post.author }}</v-card-text>
+
+              </v-col>
+            </v-row>
+
 
             <v-card-text v-if="!isEditPost">{{ post.content }}</v-card-text>
             <v-textarea v-else v-model="editedContent"></v-textarea>
@@ -93,12 +102,14 @@
                       <v-card-text>{{ comment.username }}</v-card-text>
                     </v-col>
                     <v-col cols="2">
-                      <v-btn size="small" elevation="0" v-if="comment.username == this.username" @click="editComment(comment)">
+                      <v-btn size="small" elevation="0" v-if="comment.username == this.username"
+                             @click="editComment(comment)">
                         <!-- 수정 버튼 텍스트 변경 -->
                         <template v-if="!comment.isEditing">수정</template>
                         <template v-else>저장</template>
                       </v-btn>
-                      <v-btn size="small" elevation="0" v-if="comment.username == this.username" @click="deleteComment(comment)">
+                      <v-btn size="small" elevation="0" v-if="comment.username == this.username"
+                             @click="deleteComment(comment)">
                         <!-- 삭제 버튼 -->
                         삭제
                       </v-btn>
@@ -126,16 +137,21 @@
 <script>
 import axios from "@/axios/axios-instance";
 import Cookies from "js-cookie";
+import {id} from "vuetify/locale";
 
 export default {
   props: {
     post: Object, // 클릭한 항목의 정보를 받아올 prop입니다.
   },
-  mounted() {
+
+  updated() {
+    this.isLike = false;
     // 로컬 스토리지에서 저장된 username 가져오기
     const username = localStorage.getItem('username');
     const userId = localStorage.getItem('id');
     this.postLikeLength = this.post.postLikes.length;
+    this.isEdit = false;
+    this.isEdit2 = false;
     // post.postLikes 배열을 순회하며 username 비교
     for (const like of this.post.postLikes) {
       if (like.username === username) {
@@ -143,8 +159,13 @@ export default {
         break; // 일치하는 경우를 찾으면 루프 종료
       }
     }
+
     if (this.post.authorId == userId) {
       this.isEdit = true;
+      this.isEdit2 = false;
+    } else {
+      this.isEdit = false;
+      this.isEdit2 = false;
     }
 
     this.username = localStorage.getItem('username');
@@ -164,6 +185,24 @@ export default {
     };
   },
   methods: {
+     goUserPage() {
+      if (this.post.authorId == localStorage.getItem('id')) {
+        this.$router.push('/home/myPage/')
+      } else {
+        this.$router.push('/home/userPage/' + this.post.authorId)
+      }
+    },
+    closeModal() {
+      this.postLikeLength = 0;
+      this.isLike = false;
+      this.dialog = false;
+      this.isEditPost = false;
+      this.isEdit = false;
+      this.isEdit2 = false;
+
+      console.log("닫힘")
+
+    },
     deleteComment(comment) {
       const check = confirm("정말로 삭제하시겠습니까?");
       if (check) {
@@ -197,7 +236,7 @@ export default {
           axios.put(`/comment/${comment.id}`, data)
             .then(() => {
               comment.isEditing = false;
-              comment.content=data.content;
+              comment.content = data.content;
             })
             .catch(error => {
               console.error("댓글 수정 실패:", error);
